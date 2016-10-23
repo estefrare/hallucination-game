@@ -48,6 +48,8 @@ Hallucination.GameState = {
         this.flyMusic = this.game.add.audio('fly');
         //this.music.play();
         this.map.setCollisionBetween(1, 100);
+        //player
+        this.initPlayer();
         //layer
         this.layer = this.map.createLayer('Tile Layer 1');
         this.layer.resizeWorld();
@@ -83,29 +85,35 @@ Hallucination.GameState = {
         this.suns.setAll('body.setSize', 5, 5, 5, 5);
 
         //player
-        this.initPlayer();
         this.game.camera.follow(this.player);
         this.player.play('jump');
         //text
-        this.style = { font: "bold 32px Arial", fill: "#fff", boundsAlignH: "center", boundsAlignV: "middle" };
-        this.scoreText = this.game.add.text(0, 0, "Score: "+this.player.score.toString(), this.style);
+        this.style1 = { 
+            font: "bold 32px Arial", 
+            fill: "#fff", 
+            boundsAlignH: "center", 
+            boundsAlignV: "middle",
+        };
+        this.scoreText = this.game.add.text(10, 10, "Score: "+this.player.score.toString(), this.style1);
         this.scoreText.fixedToCamera = true;
+
+        this.style2 = { font: "bold 32px Arial", fill: "#fff", boundsAlignH: "center", boundsAlignV: "middle" };
         this.gameOverText = this.game.add.text(600, this.game.world.centerY-50, 'Game Over', this.style);
         this.gameOverText.visible = false;
         this.gameOverText.fixedToCamera = true;
     },
     update: function() {
-        this.game.physics.arcade.collide(this.player, this.layer);
+        this.game.physics.arcade.collide(this.player, this.layer, this.collidePlayerLayer, null, this);
         this.game.physics.arcade.collide(this.enemis, this.layer, this.collideEnemiLayer, null, this);
-        this.game.physics.arcade.overlap(this.player, this.enemis, this.collideEnemi, null, this);
+        this.game.physics.arcade.overlap(this.player, this.enemis, this.collidePlayerEnemi, null, this);
         this.game.physics.arcade.overlap(this.player, this.coins, this.collectCoin, null, this);
         this.game.physics.arcade.overlap(this.player, this.suns, this.collectSun, null, this);
         
-
         if(this.modePlayer =='super'){
             //move up
             if(this.upKey.isDown){
-                // this.player.scale.setTo(1, 1);
+                this.player.scale.setTo(1, 1);
+                this.player.frame = 0;
                 this.player.body.velocity.y = -200;
                 this.player.angle = 10;
             }
@@ -175,7 +183,12 @@ Hallucination.GameState = {
         this.players.add(player); 
         this.player = this.players.getFirstExists(true);
     },
-    collideEnemi: function(player, enemi){
+    collidePlayerLayer: function(player, layer){
+        if(layer.index == 38){ //38 is water
+            player.body.checkCollision.down = false;
+        }
+    },
+    collidePlayerEnemi: function(player, enemi){
         if(player.body.touching.down && enemi.body.touching.up){
             enemi.frame = 2;
             enemi.animations.stop();
@@ -187,6 +200,7 @@ Hallucination.GameState = {
         }   
     },
     collideEnemiLayer: function(enemi, layer){
+
     },
     killEnemi: function(enemi){
         enemi.kill();
@@ -195,12 +209,12 @@ Hallucination.GameState = {
         coin.kill();
         this.player.score += 1;
         this.scoreText.text = 'Score: '+this.player.score.toString();
-        this.pikedCoinMusic.play();
+        //this.pikedCoinMusic.play();
     }, 
     collectSun: function(player, sun){
         sun.kill();
         this.modePlayer = 'super';
-        this.flyMusic.play();
+        //this.flyMusic.play();
         this.music.pause();
         setTimeout(this.changeMode.bind(this), 6000);
     },

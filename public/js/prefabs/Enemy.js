@@ -6,6 +6,7 @@ Hallucination.Enemy = function(game, x, y, key, health) {
   game.physics.arcade.enable(this);
   this.properties(key);
   this.health = health;
+  this.anchor.setTo(0.5);
 }
 
 Hallucination.Enemy.prototype = Object.create(Phaser.Sprite.prototype);
@@ -20,9 +21,12 @@ Hallucination.Enemy.prototype.update = function() {
       this.body.allowGravity = true;
     }
   }else{
-    this.body.velocity.x = this.speed;
+    if(this.body.velocity.x == 0){
+      this.body.velocity.x = this.speed * -1;
+      this.speed = this.speed * -1;
+      this.scale.x = this.scale.x * -1;
+    }
   }
-
 };
 
 Hallucination.Enemy.prototype.changePosition = function() {
@@ -33,14 +37,14 @@ Hallucination.Enemy.prototype.properties = function(key) {
   if(key == 'enemi'){
     this.animations.add('walk', [0, 1, 0, 1], 5, true);
     this.play('walk');
-    this.speed = -60;
+    this.speed = -20;
     this.body.setSize(25, 18, 0, 15);
     this.body.velocity.x = this.speed;
     this.body.allowGravity = true;
   }else if(key == 'enemi2'){
     this.animations.add('fly', [0, 1, 0, 1], 8, true);
     this.play('fly');
-    this.speed = -30;
+    this.speed = -40;
     this.body.setSize(20, 10, 5, 20);
     this.body.velocity.x = this.speed;
     this.body.allowGravity = false;
