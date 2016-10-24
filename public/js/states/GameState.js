@@ -47,7 +47,7 @@ Hallucination.GameState = {
         this.pikedCoinMusic = this.game.add.audio('pikedCoin');
         this.flyMusic = this.game.add.audio('fly');
         //this.music.play();
-        this.map.setCollisionBetween(1, 100);
+        this.map.setCollisionBetween(1, 500);
         //player
         this.initPlayer();
         //layer
@@ -66,17 +66,13 @@ Hallucination.GameState = {
         //this.enemies.add(this.enemy);
 
         //  And now we convert all of the Tiled objects with an ID of 34 into sprites within the coins group
-        this.map.createFromObjects('Object Layer 1', 1, 'coin', 0, true, false, this.coins);
+        this.map.createFromObjects('Object Layer 1', 1, 'coin', 0, true, false, this.coins, Hallucination.Coin);
         this.map.createFromObjects('Object Layer 1', 21, 'sun', 0, true, false, this.suns);
         this.map.createFromObjects('Object Layer 1', 49, 'enemi', 0, true, false, this.enemis, Hallucination.Enemy);
         this.map.createFromObjects('Object Layer 1', 67, 'enemi2', 0, true, false, this.enemis, Hallucination.Enemy);
 
-        //  Add animations to all of the coin sprites
-        this.enemis.callAll('animations.add', 'animations', 'walk', [0, 1, 0, 1], 5, true);
-        this.enemis.callAll('animations.play', 'animations', 'walk');
-
-        this.coins.callAll('animations.add', 'animations', 'spin', [0, 1, 2, 3, 4, 5, 6, 7, 8, 9], 13, true);
-        this.coins.callAll('animations.play', 'animations', 'spin');
+        //this.coins.callAll('animations.add', 'animations', 'spin', [0, 1, 2, 3, 4, 5, 6, 7, 8, 9], 13, true);
+        //this.coins.callAll('animations.play', 'animations', 'spin');
         this.coins.setAll('body.allowGravity', false);
 
         this.suns.callAll('animations.add', 'animations', 'spin', [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 8, 7, 6, 5, 4, 3, 2, 1], 8, true);
@@ -109,8 +105,10 @@ Hallucination.GameState = {
         this.game.physics.arcade.overlap(this.player, this.coins, this.collectCoin, null, this);
         this.game.physics.arcade.overlap(this.player, this.suns, this.collectSun, null, this);
         
+
         if(this.modePlayer =='super'){
             //move up
+            this.player.body.setSize(20, 48, 20, 33);
             if(this.upKey.isDown){
                 this.player.scale.setTo(1, 1);
                 this.player.frame = 0;
@@ -132,7 +130,6 @@ Hallucination.GameState = {
                         this.player.body.velocity.x += 2;
                     }
                 }
-                
             }else{
                 this.player.body.setSize(25, 78, 20, 13);
                 //move left
@@ -168,7 +165,7 @@ Hallucination.GameState = {
     },
     render: function() {
 
-        //this.game.debug.body(this.player);
+        // this.game.debug.body(this.player);
         // call renderGroup on each of the alive members    
         // this.enemis.forEachAlive(renderGroup, this);
         // function renderGroup(member) {
