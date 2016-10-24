@@ -5,7 +5,7 @@ Hallucination.Enemy = function(game, x, y, key, health) {
 
   game.physics.arcade.enable(this);
   this.properties(key);
-  this.health = health;
+  this.health = 1;
   this.anchor.setTo(0.5);
 }
 
@@ -29,6 +29,9 @@ Hallucination.Enemy.prototype.update = function() {
     }
   }else{
     this.animations.stop();
+  }
+  if(this.health == 0 && !this.inCamera){
+    this.kill();
   }
 };
 

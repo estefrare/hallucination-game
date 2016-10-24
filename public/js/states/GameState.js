@@ -160,7 +160,6 @@ Hallucination.GameState = {
             if(this.downKey.isUp && this.player.animations.currentAnim.isFinished){
                 this.player.frame = 0;
             }    
-
         }
     },
     render: function() {
@@ -183,21 +182,24 @@ Hallucination.GameState = {
     collidePlayerLayer: function(player, layer){
         if(layer.index == 38){ //38 is water
             player.body.checkCollision.down = false;
-        }
+        }       
     },
     collidePlayerEnemi: function(player, enemi){
-        if(player.body.touching.down && enemi.body.touching.up){
+        if(player.body.touching.down/* && enemi.body.touching.up*/){
             enemi.frame = 2;
             enemi.animations.stop();
             enemi.body.velocity.x = 0;
-            //enemi.exists = false;
+            enemi.health = 0;
         }else{
-            // this.gameOverText.visible = true;
-            // this.game.isRunning = false;
+            if(enemi.health > 0){
+                this.player.damage(10);
+            } 
         }   
     },
     collideEnemiLayer: function(enemi, layer){
-
+        if(layer.index == 31 || layer.index == 33 || layer.index == 45 || layer.index == 44){
+            enemi.body.velocity.x = 0;
+        }
     },
     killEnemi: function(enemi){
         enemi.kill();

@@ -1,6 +1,6 @@
 var Hallucination = Hallucination || {};
 
-Hallucination.Player = function(game, x, y, key, health) {
+Hallucination.Player = function(game, x, y, key) {
 	Phaser.Sprite.call(this, game, x, y, 'player');
 
 	//this.game = game;
@@ -13,7 +13,7 @@ Hallucination.Player = function(game, x, y, key, health) {
 	this.animations.add('runing', [0, 1, 2, 3, 4, 5], 14, false);  
 	//this.animations.add('stop', [0, 1, 2, 3, 2, 1], 2, false);  
 	this.animations.add('jump', [13, 12, 12, 6, 0], 5, false);  
-	this.health = health;
+	this.health = 10;
 	this.score = 0;
 };
 
@@ -35,19 +35,24 @@ Hallucination.Player.prototype.update = function() {
 //   }
 // };
 
-// Hallucination.Player.prototype.damage = function(amount) {
-//   Phaser.Sprite.prototype.damage.call(this, amount);
-//   //play "getting hit" animation
-//   this.play('getHit');
+Hallucination.Player.prototype.damage = function(amount) {
+  //Phaser.Sprite.prototype.damage.call(this, amount);
+  //play "getting hit" animation
+  //this.play('getHit');
 
-//   //particle explosion
-//   if(this.health <= 0) {
-//     var emitter = this.game.add.emitter(this.x, this.y, 100);
-//     emitter.makeParticles('enemyParticle');
-//     emitter.minParticleSpeed.setTo(-200, -200);
-//     emitter.maxParticleSpeed.setTo(200, 200);
-//     emitter.gravity = 0;
-//     emitter.start(true, 500, null, 100);
-//   }
-// };
+  this.health -= amount;
+  if(this.health <= 0){
+  	this.kill();
+  }
+
+  //particle explosion
+  // if(this.health <= 0) {
+  //   var emitter = this.game.add.emitter(this.x, this.y, 100);
+  //   emitter.makeParticles('enemyParticle');
+  //   emitter.minParticleSpeed.setTo(-200, -200);
+  //   emitter.maxParticleSpeed.setTo(200, 200);
+  //   emitter.gravity = 0;
+  //   emitter.start(true, 500, null, 100);
+  // }
+};
 
