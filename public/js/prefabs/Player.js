@@ -35,19 +35,18 @@ Hallucination.Player.prototype.update = function() {
 //   }
 // };
 
-Hallucination.Player.prototype.damage = function(amount) {
+Hallucination.Player.prototype.damage = function() {
   //Phaser.Sprite.prototype.damage.call(this, amount);
   //play "getting hit" animation
   //this.play('getHit');
 
-  this.health -= amount;
+ 
+  this.health--;
   this.body.x = 100;
   this.body.y = 100;
-  console.log('atack');
   if(this.health <= 0){
   	this.kill();
   }
-
   //particle explosion
   // if(this.health <= 0) {
   //   var emitter = this.game.add.emitter(this.x, this.y, 100);

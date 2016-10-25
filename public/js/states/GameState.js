@@ -47,12 +47,13 @@ Hallucination.GameState = {
         this.music = this.game.add.audio('music');
         this.pikedCoinMusic = this.game.add.audio('pikedCoin');
         this.flyMusic = this.game.add.audio('fly');
-        //this.music.play();
+        this.music.play();
         this.map.setCollisionBetween(1, 500);
         //player
         this.initPlayer();
         //layer
         this.layer = this.map.createLayer('Tile Layer 1');
+        this.layer2 = this.map.createLayer('Tile Layer 2');
         this.layer.resizeWorld();
         //coins
         this.coins = this.game.add.group();
@@ -63,16 +64,21 @@ Hallucination.GameState = {
         //enemis
         this.enemis = this.game.add.group();
         this.enemis.enableBody = true;
+        //lives
+        this.lives = this.game.add.group();
+        this.lives.enableBody = true;
 
         //  And now we convert all of the Tiled objects with an ID of 34 into sprites within the coins group
         this.map.createFromObjects('Object Layer 1', 1, 'coin', 0, true, false, this.coins, Hallucination.Coin);
         this.map.createFromObjects('Object Layer 1', 21, 'sun', 0, true, false, this.suns);
-        this.map.createFromObjects('Object Layer 1', 49, 'enemi', 0, true, false, this.enemis, Hallucination.Enemy);
-        this.map.createFromObjects('Object Layer 1', 67, 'enemi2', 0, true, false, this.enemis, Hallucination.Enemy);
+        this.map.createFromObjects('Object Layer 1', 52, 'enemi', 0, true, false, this.enemis, Hallucination.Enemy);
+        this.map.createFromObjects('Object Layer 1', 70, 'enemi2', 0, true, false, this.enemis, Hallucination.Enemy);
+        this.map.createFromObjects('Object Layer 1', 88, 'live', 0, true, false, this.lives);        
 
         //this.coins.callAll('animations.add', 'animations', 'spin', [0, 1, 2, 3, 4, 5, 6, 7, 8, 9], 13, true);
         //this.coins.callAll('animations.play', 'animations', 'spin');
         this.coins.setAll('body.allowGravity', false);
+        this.lives.setAll('body.allowGravity', false);
 
         this.suns.callAll('animations.add', 'animations', 'spin', [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 8, 7, 6, 5, 4, 3, 2, 1], 8, true);
         this.suns.callAll('animations.play', 'animations', 'spin');
@@ -100,8 +106,8 @@ Hallucination.GameState = {
         this.gameOverText.visible = false;
         this.gameOverText.fixedToCamera = true;
 
-        this.lives = this.game.add.image(150, 23, 'live');
-        this.lives.fixedToCamera = true;
+        this.live = this.game.add.image(150, 23, 'live');
+        this.live.fixedToCamera = true;
         this.score = this.game.add.image(20, 20, 'coin', 0);
         this.score.fixedToCamera = true;
     },
@@ -111,6 +117,11 @@ Hallucination.GameState = {
         this.game.physics.arcade.overlap(this.player, this.enemis, this.collidePlayerEnemi, null, this);
         this.game.physics.arcade.overlap(this.player, this.coins, this.collectCoin, null, this);
         this.game.physics.arcade.overlap(this.player, this.suns, this.collectSun, null, this);
+        this.game.physics.arcade.overlap(this.player, this.lives, this.collidePlayerLives, null, this);
+
+        if(this.player.health <= 0){
+            this.gameOverText.visible = true;
+        }
 
         if(this.modePlayer =='super'){
             //move up
@@ -185,10 +196,20 @@ Hallucination.GameState = {
         this.players.add(player); 
         this.player = this.players.getFirstExists(true);
     },
+    collidePlayerLives: function(player, lives){
+        player.health++;
+        this.liveText.text = player.health.toString();
+        lives.kill();
+    },
     collidePlayerLayer: function(player, layer){
-        if(layer.index == 38){ //38 is water
-            player.body.checkCollision.down = false;
+        if(layer.index == 41){ //38 is water
+            player.damage();
+            this.liveText.text = player.health.toString();
         }       
+        if(layer.index == 49){//49 is flag
+            this.gameOverText.text = 'You Win';
+            this.gameOverText.visible = true;
+        }
     },
     collidePlayerEnemi: function(player, enemi){
         if(player.body.touching.down/* && enemi.body.touching.up*/){
@@ -208,19 +229,16 @@ Hallucination.GameState = {
             enemi.body.velocity.x = 0;
         }
     },
-    killEnemi: function(enemi){
-        enemi.kill();
-    },
     collectCoin: function(player, coin) {
         coin.kill();
-        this.player.score += 1;
-        this.scoreText.text = this.player.score.toString();
-        //this.pikedCoinMusic.play();
+        player.score += 1;
+        this.scoreText.text = player.score.toString();
+        this.pikedCoinMusic.play();
     }, 
     collectSun: function(player, sun){
         sun.kill();
         this.modePlayer = 'super';
-        //this.flyMusic.play();
+        this.flyMusic.play();
         this.music.pause();
         setTimeout(this.changeMode.bind(this), 6000);
     },
@@ -229,7 +247,7 @@ Hallucination.GameState = {
             this.modePlayer = 'normal';
             this.player.angle = 0;
             this.flyMusic.stop();
-            //this.music.play();
+            this.music.play();
         }else if(this.modePlayer == 'normal'){
             this.modePlayer = 'super';
         }
