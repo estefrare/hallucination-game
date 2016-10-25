@@ -13,7 +13,7 @@ Hallucination.Player = function(game, x, y, key) {
 	this.animations.add('runing', [0, 1, 2, 3, 4, 5], 14, false);  
 	//this.animations.add('stop', [0, 1, 2, 3, 2, 1], 2, false);  
 	this.animations.add('jump', [13, 12, 12, 6, 0], 5, false);  
-	this.health = 10;
+	this.health = 3;
 	this.score = 0;
 };
 
@@ -41,6 +41,9 @@ Hallucination.Player.prototype.damage = function(amount) {
   //this.play('getHit');
 
   this.health -= amount;
+  this.body.x = 100;
+  this.body.y = 100;
+  console.log('atack');
   if(this.health <= 0){
   	this.kill();
   }
@@ -55,4 +58,5 @@ Hallucination.Player.prototype.damage = function(amount) {
   //   emitter.start(true, 500, null, 100);
   // }
 };
+
 

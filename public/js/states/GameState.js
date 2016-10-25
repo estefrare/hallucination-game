@@ -21,6 +21,7 @@ Hallucination.GameState = {
         //background
         this.load.image('sky', 'assets/images/sky.png');
         this.load.image('mountain', 'assets/images/mountain.png');
+        this.load.image('live', 'assets/sprites/live.png');
         //image
         this.game.load.image('tiles1', 'assets/tilemaps/tiles/tiles1.png');
         //spritesheet
@@ -62,8 +63,6 @@ Hallucination.GameState = {
         //enemis
         this.enemis = this.game.add.group();
         this.enemis.enableBody = true;
-        // this.enemy = new Hallucination.Enemy(this.game, 'enemi', 3);
-        //this.enemies.add(this.enemy);
 
         //  And now we convert all of the Tiled objects with an ID of 34 into sprites within the coins group
         this.map.createFromObjects('Object Layer 1', 1, 'coin', 0, true, false, this.coins, Hallucination.Coin);
@@ -90,13 +89,21 @@ Hallucination.GameState = {
             boundsAlignH: "center", 
             boundsAlignV: "middle",
         };
-        this.scoreText = this.game.add.text(10, 10, "Score: "+this.player.score.toString(), this.style1);
+        this.scoreText = this.game.add.text(60, 18, this.player.score.toString(), this.style1);
         this.scoreText.fixedToCamera = true;
+
+        this.liveText = this.game.add.text(190, 18, this.player.health.toString(), this.style1);
+        this.liveText.fixedToCamera = true;
 
         this.style2 = { font: "bold 32px Arial", fill: "#fff", boundsAlignH: "center", boundsAlignV: "middle" };
         this.gameOverText = this.game.add.text(600, this.game.world.centerY-50, 'Game Over', this.style);
         this.gameOverText.visible = false;
         this.gameOverText.fixedToCamera = true;
+
+        this.lives = this.game.add.image(150, 23, 'live');
+        this.lives.fixedToCamera = true;
+        this.score = this.game.add.image(20, 20, 'coin', 0);
+        this.score.fixedToCamera = true;
     },
     update: function() {
         this.game.physics.arcade.collide(this.player, this.layer, this.collidePlayerLayer, null, this);
@@ -104,7 +111,6 @@ Hallucination.GameState = {
         this.game.physics.arcade.overlap(this.player, this.enemis, this.collidePlayerEnemi, null, this);
         this.game.physics.arcade.overlap(this.player, this.coins, this.collectCoin, null, this);
         this.game.physics.arcade.overlap(this.player, this.suns, this.collectSun, null, this);
-        
 
         if(this.modePlayer =='super'){
             //move up
@@ -192,7 +198,8 @@ Hallucination.GameState = {
             enemi.health = 0;
         }else{
             if(enemi.health > 0){
-                this.player.damage(10);
+                player.damage(1);
+                this.liveText.text = player.health.toString();
             } 
         }   
     },
@@ -207,7 +214,7 @@ Hallucination.GameState = {
     collectCoin: function(player, coin) {
         coin.kill();
         this.player.score += 1;
-        this.scoreText.text = 'Score: '+this.player.score.toString();
+        this.scoreText.text = this.player.score.toString();
         //this.pikedCoinMusic.play();
     }, 
     collectSun: function(player, sun){
