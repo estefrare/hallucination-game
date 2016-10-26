@@ -47,7 +47,7 @@ Hallucination.GameState = {
         this.music = this.game.add.audio('music');
         this.pikedCoinMusic = this.game.add.audio('pikedCoin');
         this.flyMusic = this.game.add.audio('fly');
-        this.music.play();
+        //this.music.play();
         this.map.setCollisionBetween(1, 500);
         //player
         this.initPlayer();
@@ -88,6 +88,7 @@ Hallucination.GameState = {
         //player
         this.game.camera.follow(this.player);
         this.player.play('jump');
+        console.log(this.game.camera.follow);
         //text
         this.style1 = { 
             font: "bold 32px Arial", 
@@ -118,6 +119,8 @@ Hallucination.GameState = {
         this.game.physics.arcade.overlap(this.player, this.coins, this.collectCoin, null, this);
         this.game.physics.arcade.overlap(this.player, this.suns, this.collectSun, null, this);
         this.game.physics.arcade.overlap(this.player, this.lives, this.collidePlayerLives, null, this);
+
+        //console.log(this.game.camera.world.cameraOffset);
 
         if(this.player.health <= 0){
             this.gameOverText.visible = true;
@@ -202,14 +205,14 @@ Hallucination.GameState = {
         lives.kill();
     },
     collidePlayerLayer: function(player, layer){
-        if(layer.index == 41){ //38 is water
+        if(layer.index == 41 || layer.index == 50){ //38 is water, 50 is spike
             player.damage();
             this.liveText.text = player.health.toString();
         }       
         if(layer.index == 49){//49 is flag
             this.gameOverText.text = 'You Win';
             this.gameOverText.visible = true;
-        }
+        } 
     },
     collidePlayerEnemi: function(player, enemi){
         if(player.body.touching.down/* && enemi.body.touching.up*/){
@@ -233,13 +236,13 @@ Hallucination.GameState = {
         coin.kill();
         player.score += 1;
         this.scoreText.text = player.score.toString();
-        this.pikedCoinMusic.play();
+        //this.pikedCoinMusic.play();
     }, 
     collectSun: function(player, sun){
         sun.kill();
         this.modePlayer = 'super';
         this.flyMusic.play();
-        this.music.pause();
+        //this.music.pause();
         setTimeout(this.changeMode.bind(this), 6000);
     },
     changeMode: function(){
@@ -247,7 +250,7 @@ Hallucination.GameState = {
             this.modePlayer = 'normal';
             this.player.angle = 0;
             this.flyMusic.stop();
-            this.music.play();
+            //this.music.play();
         }else if(this.modePlayer == 'normal'){
             this.modePlayer = 'super';
         }
