@@ -15,6 +15,8 @@ Hallucination.Player = function(game, x, y, key) {
 	this.animations.add('jump', [13, 12, 12, 6, 0], 5, false);  
 	this.health = 3;
 	this.score = 0;
+	this.ax = 100;
+	this.ay = 100;
 };
 
 Hallucination.Player.prototype = Object.create(Phaser.Sprite.prototype);
@@ -40,10 +42,9 @@ Hallucination.Player.prototype.damage = function() {
   //play "getting hit" animation
   //this.play('getHit');
 
- 
   this.health--;
-  this.body.x = 100;
-  this.body.y = 100;
+  this.body.x = this.ax;
+  this.body.y = this.ay;
   if(this.health <= 0){
   	this.kill();
   }

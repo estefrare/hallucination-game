@@ -3,6 +3,8 @@ var Hallucination = Hallucination || {};
 Hallucination.GameState = {
     init: function(){
         this.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
+        this.scale.pageAlignVertically = true;
+        this.scale.pageAlignHorizontally = true;
         this.game.physics.startSystem(Phaser.Physics.ARCADE);
         this.game.physics.arcade.gravity.y = 1000;
         
@@ -47,7 +49,7 @@ Hallucination.GameState = {
         this.music = this.game.add.audio('music');
         this.pikedCoinMusic = this.game.add.audio('pikedCoin');
         this.flyMusic = this.game.add.audio('fly');
-        //this.music.play();
+        this.music.play();
         this.map.setCollisionBetween(1, 500);
         //player
         this.initPlayer();
@@ -87,8 +89,7 @@ Hallucination.GameState = {
 
         //player
         this.game.camera.follow(this.player);
-        this.player.play('jump');
-        console.log(this.game.camera.follow);
+        this.player.play('jump');   
         //text
         this.style1 = { 
             font: "bold 32px Arial", 
@@ -175,11 +176,19 @@ Hallucination.GameState = {
                     this.player.body.velocity.y = -550;
                     this.player.play('jump');
                 }
+                if(this.upKey.isDown){
+                    this.upKey.isDown = false;
+                }
             }
             //return normal frame
             if(this.downKey.isUp && this.player.animations.currentAnim.isFinished){
                 this.player.frame = 0;
-            }    
+            }  
+
+            if(this.player.body.x >= 7367 || this.player.body.y >= 531){
+                this.player.ax = 7367;
+                this.player.ay = 531;
+            }  
         }
     },
     render: function() {
@@ -213,6 +222,7 @@ Hallucination.GameState = {
             this.gameOverText.text = 'You Win';
             this.gameOverText.visible = true;
         } 
+
     },
     collidePlayerEnemi: function(player, enemi){
         if(player.body.touching.down/* && enemi.body.touching.up*/){
@@ -236,13 +246,13 @@ Hallucination.GameState = {
         coin.kill();
         player.score += 1;
         this.scoreText.text = player.score.toString();
-        //this.pikedCoinMusic.play();
+        this.pikedCoinMusic.play();
     }, 
     collectSun: function(player, sun){
         sun.kill();
         this.modePlayer = 'super';
         this.flyMusic.play();
-        //this.music.pause();
+        this.music.pause();
         setTimeout(this.changeMode.bind(this), 6000);
     },
     changeMode: function(){
@@ -250,7 +260,7 @@ Hallucination.GameState = {
             this.modePlayer = 'normal';
             this.player.angle = 0;
             this.flyMusic.stop();
-            //this.music.play();
+            this.music.play();
         }else if(this.modePlayer == 'normal'){
             this.modePlayer = 'super';
         }
