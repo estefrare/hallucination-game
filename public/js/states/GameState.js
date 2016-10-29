@@ -32,6 +32,12 @@ Hallucination.GameState = {
         this.load.spritesheet('coin', 'assets/sprites/coin.png', 32, 32);
         this.load.spritesheet('sun', 'assets/sprites/sun.png', 32, 32);
         this.load.spritesheet('player', 'assets/sprites/player2.png', 66, 92, 16);
+        //controls
+        this.load.image('leftButton', 'assets/images/leftButton.png');
+        this.load.image('rightButton', 'assets/images/rightButton.png');
+        this.load.image('upButton', 'assets/images/upButton.png');
+        this.load.image('downButton', 'assets/images/downButton.png');
+
         this.modePlayer = 'normal';
     },
     create: function() {
@@ -82,8 +88,8 @@ Hallucination.GameState = {
         this.coins.setAll('body.allowGravity', false);
         this.lives.setAll('body.allowGravity', false);
 
-        this.suns.callAll('animations.add', 'animations', 'spin', [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 8, 7, 6, 5, 4, 3, 2, 1], 8, true);
-        this.suns.callAll('animations.play', 'animations', 'spin');
+        //this.suns.callAll('animations.add', 'animations', 'spin', [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 8, 7, 6, 5, 4, 3, 2, 1], 8, true);
+        //this.suns.callAll('animations.play', 'animations', 'spin');
         this.suns.setAll('body.allowGravity', false);
         this.suns.setAll('body.setSize', 5, 5, 5, 5);
 
@@ -108,6 +114,8 @@ Hallucination.GameState = {
         this.gameOverText.visible = false;
         this.gameOverText.fixedToCamera = true;
 
+        this.addTouchControls();
+
         this.live = this.game.add.image(150, 23, 'live');
         this.live.fixedToCamera = true;
         this.score = this.game.add.image(20, 20, 'coin', 0);
@@ -121,8 +129,6 @@ Hallucination.GameState = {
         this.game.physics.arcade.overlap(this.player, this.suns, this.collectSun, null, this);
         this.game.physics.arcade.overlap(this.player, this.lives, this.collidePlayerLives, null, this);
 
-        //console.log(this.game.camera.world.cameraOffset);
-
         if(this.player.health <= 0){
             this.gameOverText.visible = true;
         }
@@ -130,7 +136,7 @@ Hallucination.GameState = {
         if(this.modePlayer =='super'){
             //move up
             this.player.body.setSize(20, 48, 20, 33);
-            if(this.upKey.isDown){
+            if(this.upKey.isDown || this.player.isJumping){
                 this.player.scale.setTo(1, 1);
                 this.player.frame = 0;
                 this.player.body.velocity.y = -200;
@@ -141,7 +147,7 @@ Hallucination.GameState = {
         }else if(this.modePlayer == 'normal'){
             this.stage.backgroundColor = "#a3cff0";
             //down
-            if(this.downKey.isDown){
+            if(this.downKey.isDown || this.player.isBending){
                 this.player.frame = 12;
                 this.player.body.setSize(30, 58, 20, 33);
                 if(this.player.body.velocity.x != 0){
@@ -154,14 +160,14 @@ Hallucination.GameState = {
             }else{
                 this.player.body.setSize(25, 78, 20, 13);
                 //move left
-                if(this.leftKey.isDown) {
+                if(this.leftKey.isDown || this.player.isMovingLeft) {
                     this.player.scale.setTo(-1, 1);
                     this.player.body.velocity.x = -180;                
                     if(this.player.animations.currentAnim.isFinished){
                        this.player.play('runing');
                     }
                 //move right    
-                }else if(this.rightKey.isDown) {
+                }else if(this.rightKey.isDown || this.player.isMovingRight) {
                     this.player.scale.setTo(1, 1);
                     this.player.body.velocity.x = +180;
                     if(this.player.animations.currentAnim.isFinished){
@@ -172,7 +178,7 @@ Hallucination.GameState = {
                     this.player.animations.stop();
                 }
                 //up
-                if(this.upKey.isDown && this.player.body.velocity.y == 0){
+                if((this.upKey.isDown || this.player.isJumping) && this.player.body.velocity.y == 0){
                     this.player.body.velocity.y = -550;
                     this.player.play('jump');
                 }
@@ -199,6 +205,61 @@ Hallucination.GameState = {
         // function renderGroup(member) {
         //     this.game.debug.body(member);
         // }
+    },
+    addTouchControls: function() {
+        this.leftArrow = this.add.button(50, 580, 'leftButton');
+        this.rightArrow = this.add.button(150, 580, 'rightButton');
+        this.upArrow = this.add.button(1250, 495, 'upButton');
+        this.downArrow = this.add.button(1250, 580, 'downButton');
+
+        this.leftArrow.fixedToCamera = true;
+        this.rightArrow.fixedToCamera = true;
+        this.upArrow.fixedToCamera = true;
+        this.downArrow.fixedToCamera = true;
+
+        this.leftArrow.events.onInputDown.add(this.moveLeft.bind(this));
+        this.leftArrow.events.onInputUp.add(this.dontMoveLeft.bind(this));
+        this.leftArrow.events.onInputOver.add(this.moveLeft.bind(this));
+        this.leftArrow.events.onInputOut.add(this.dontMoveLeft.bind(this));
+
+        this.rightArrow.events.onInputDown.add(this.moveRight.bind(this));
+        this.rightArrow.events.onInputUp.add(this.dontMoveRight.bind(this));
+        this.rightArrow.events.onInputOver.add(this.moveRight.bind(this));
+        this.rightArrow.events.onInputOut.add(this.dontMoveRight.bind(this));
+
+        this.upArrow.events.onInputDown.add(this.jump.bind(this));
+        this.upArrow.events.onInputUp.add(this.dontJump.bind(this));
+        this.upArrow.events.onInputOver.add(this.jump.bind(this));
+        this.upArrow.events.onInputOut.add(this.dontJump.bind(this));
+
+        this.downArrow.events.onInputDown.add(this.bend.bind(this));
+        this.downArrow.events.onInputUp.add(this.dontBend.bind(this));
+        this.downArrow.events.onInputOver.add(this.bend.bind(this));
+        this.downArrow.events.onInputOut.add(this.dontBend.bind(this));
+    },
+    moveLeft: function() {
+        this.player.isMovingLeft = true;
+    },
+    dontMoveLeft: function() {
+        this.player.isMovingLeft = false;
+    },
+    moveRight: function() {
+        this.player.isMovingRight = true;
+    },
+    dontMoveRight: function() {
+        this.player.isMovingRight = false;
+    },
+    jump: function() {
+        this.player.isJumping = true;
+    },
+    dontJump: function() {
+        this.player.isJumping = false;
+    },
+    bend: function() {
+        this.player.isBending = true;
+    },
+    dontBend: function() {
+        this.player.isBending = false;
     },
     initPlayer: function(){
         this.players = this.add.group();
