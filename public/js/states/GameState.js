@@ -8,58 +8,68 @@ Hallucination.GameState = {
         this.game.physics.startSystem(Phaser.Physics.ARCADE);
         this.game.physics.arcade.gravity.y = 1000;
         
+        //keys
         this.upKey = this.game.input.keyboard.addKey(Phaser.Keyboard.UP);
         this.downKey = this.game.input.keyboard.addKey(Phaser.Keyboard.DOWN);
         this.leftKey = this.game.input.keyboard.addKey(Phaser.Keyboard.LEFT);
         this.rightKey = this.game.input.keyboard.addKey(Phaser.Keyboard.RIGHT);
+
+        //this is for to move the camera on movil version
+        this.moveCamera = 0;
     },
     preload: function() {
-        //tilemap
-        this.load.tilemap('map', 'assets/tilemaps/maps/map.csv', null, Phaser.Tilemap.TILED_JSON);
+        if(navigator.platform == 'Win32' || navigator.platform == 'MacIntel'){
+            //this is only for the pc version
+            //map
+            this.load.tilemap('map', 'assets/tilemaps/maps/map.csv', null, Phaser.Tilemap.TILED_JSON);
+            //images
+            this.load.image('sky', 'assets/images/sky.png');
+        }else{
+            //this is only for the movil version
+            //map
+            this.load.tilemap('map', 'assets/tilemaps/maps/mapMovil.csv', null, Phaser.Tilemap.TILED_JSON);
+            //controls
+            this.load.image('leftButton', 'assets/images/leftButton.png');
+            this.load.image('rightButton', 'assets/images/rightButton.png');
+            this.load.image('upButton', 'assets/images/upButton.png');
+            this.load.image('downButton', 'assets/images/downButton.png');
+        }
+        //this is for both versions     
         //audios
+        this.load.audio('pikedCoin', ['assets/audios/coin.ogg']);
         this.load.audio('music', ['assets/audios/music.ogg']);
         this.load.audio('fly', ['assets/audios/01.ogg']);
-        this.load.audio('pikedCoin', ['assets/audios/coin.ogg']);
-        //background
-        this.load.image('sky', 'assets/images/sky.png');
-        this.load.image('mountain', 'assets/images/mountain.png');
-        this.load.image('live', 'assets/sprites/live.png');
         //image
         this.game.load.image('tiles1', 'assets/tilemaps/tiles/tiles1.png');
+        this.load.image('live', 'assets/sprites/live.png');
+        this.load.image('gameOver', 'assets/images/gameover.png');
+        this.load.image('win', 'assets/images/win.png');
         //spritesheet
         this.load.spritesheet('enemi', 'assets/sprites/enemis.png', 32, 32);
         this.load.spritesheet('enemi2', 'assets/sprites/enemis2.png', 32, 32);
         this.load.spritesheet('coin', 'assets/sprites/coin.png', 32, 32);
         this.load.spritesheet('sun', 'assets/sprites/sun.png', 32, 32);
         this.load.spritesheet('player', 'assets/sprites/player2.png', 66, 92, 16);
-        //controls
-        this.load.image('leftButton', 'assets/images/leftButton.png');
-        this.load.image('rightButton', 'assets/images/rightButton.png');
-        this.load.image('upButton', 'assets/images/upButton.png');
-        this.load.image('downButton', 'assets/images/downButton.png');
 
+        //Game mode
         this.modePlayer = 'normal';
     },
     create: function() {
-        this.stage.backgroundColor = "#a3cff0";
-        //moving stars background
-        //sky
-        this.sky = this.add.tileSprite(0, 0, this.game.world.width, this.game.world.height, 'sky');
-        this.sky.autoScroll(-10, 0);
-        this.sky.fixedToCamera = true;
+        if(navigator.platform == 'Win32' || navigator.platform == 'MacIntel'){
+            //if this only for the pc version
+            this.sky = this.add.tileSprite(0, 0, this.game.world.width, this.game.world.height, 'sky');
+            this.sky.autoScroll(-10, 0);
+            this.sky.fixedToCamera = true;
+        }
         //map
         this.map = this.game.add.tilemap('map');
         //tiles
         this.map.addTilesetImage('tiles1');
-        //music
-        this.music = this.game.add.audio('music');
-        this.pikedCoinMusic = this.game.add.audio('pikedCoin');
-        this.flyMusic = this.game.add.audio('fly');
-        this.music.play();
+        //Set collision
         this.map.setCollisionBetween(1, 500);
         //player
         this.initPlayer();
-        //layer
+        //layers
         this.layer = this.map.createLayer('Tile Layer 1');
         this.layer2 = this.map.createLayer('Tile Layer 2');
         this.layer.resizeWorld();
@@ -76,27 +86,33 @@ Hallucination.GameState = {
         this.lives = this.game.add.group();
         this.lives.enableBody = true;
 
-        //  And now we convert all of the Tiled objects with an ID of 34 into sprites within the coins group
+        //create objets
         this.map.createFromObjects('Object Layer 1', 1, 'coin', 0, true, false, this.coins, Hallucination.Coin);
         this.map.createFromObjects('Object Layer 1', 21, 'sun', 0, true, false, this.suns);
         this.map.createFromObjects('Object Layer 1', 52, 'enemi', 0, true, false, this.enemis, Hallucination.Enemy);
         this.map.createFromObjects('Object Layer 1', 70, 'enemi2', 0, true, false, this.enemis, Hallucination.Enemy);
         this.map.createFromObjects('Object Layer 1', 88, 'live', 0, true, false, this.lives);        
-
-        //this.coins.callAll('animations.add', 'animations', 'spin', [0, 1, 2, 3, 4, 5, 6, 7, 8, 9], 13, true);
-        //this.coins.callAll('animations.play', 'animations', 'spin');
+        //set groups
         this.coins.setAll('body.allowGravity', false);
         this.lives.setAll('body.allowGravity', false);
-
-        //this.suns.callAll('animations.add', 'animations', 'spin', [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 8, 7, 6, 5, 4, 3, 2, 1], 8, true);
-        //this.suns.callAll('animations.play', 'animations', 'spin');
         this.suns.setAll('body.allowGravity', false);
         this.suns.setAll('body.setSize', 5, 5, 5, 5);
 
-        //player
-        this.game.camera.follow(this.player);
+        if(navigator.platform == 'Win32' || navigator.platform == 'MacIntel'){
+            this.game.camera.follow(this.player);
+            this.suns.callAll('animations.add', 'animations', 'spin', [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 8, 7, 6, 5, 4, 3, 2, 1], 8, true);
+            this.suns.callAll('animations.play', 'animations', 'spin');  
+        }else{
+            this.addTouchControls();
+        }
+        //music
+        this.music = this.game.add.audio('music');
+        this.flyMusic = this.game.add.audio('fly');
+        this.music.play();
+        this.pikedCoinMusic = this.game.add.audio('pikedCoin');
+        //this is because the player start jumping 
         this.player.play('jump');   
-        //text
+        //text on screen -------------------------------//
         this.style1 = { 
             font: "bold 32px Arial", 
             fill: "#fff", 
@@ -105,23 +121,16 @@ Hallucination.GameState = {
         };
         this.scoreText = this.game.add.text(60, 18, this.player.score.toString(), this.style1);
         this.scoreText.fixedToCamera = true;
-
         this.liveText = this.game.add.text(190, 18, this.player.health.toString(), this.style1);
         this.liveText.fixedToCamera = true;
-
-        this.style2 = { font: "bold 32px Arial", fill: "#fff", boundsAlignH: "center", boundsAlignV: "middle" };
-        this.gameOverText = this.game.add.text(600, this.game.world.centerY-50, 'Game Over', this.style);
-        this.gameOverText.visible = false;
-        this.gameOverText.fixedToCamera = true;
-
-        this.addTouchControls();
-
         this.live = this.game.add.image(150, 23, 'live');
         this.live.fixedToCamera = true;
         this.score = this.game.add.image(20, 20, 'coin', 0);
         this.score.fixedToCamera = true;
+        //--------------------------------------------//
     },
     update: function() {
+        //collides
         this.game.physics.arcade.collide(this.player, this.layer, this.collidePlayerLayer, null, this);
         this.game.physics.arcade.collide(this.enemis, this.layer, this.collideEnemiLayer, null, this);
         this.game.physics.arcade.overlap(this.player, this.enemis, this.collidePlayerEnemi, null, this);
@@ -129,8 +138,18 @@ Hallucination.GameState = {
         this.game.physics.arcade.overlap(this.player, this.suns, this.collectSun, null, this);
         this.game.physics.arcade.overlap(this.player, this.lives, this.collidePlayerLives, null, this);
 
+        //camera comportment
+        if(navigator.platform != 'Win32'){
+            if(this.player.body.x > this.moveCamera - 200){
+            this.game.camera.x = this.player.body.x; 
+            this.moveCamera = this.player.body.x + 1400;
+            }
+        }       
+
+        console.log(this.pepe)  
+
         if(this.player.health <= 0){
-            this.gameOverText.visible = true;
+            this.gameEnd = this.game.add.image(531, 226.5 , 'gameOver');
         }
 
         if(this.modePlayer =='super'){
@@ -190,11 +209,12 @@ Hallucination.GameState = {
             if(this.downKey.isUp && this.player.animations.currentAnim.isFinished){
                 this.player.frame = 0;
             }  
-
-            if(this.player.body.x >= 7367 || this.player.body.y >= 531){
-                this.player.ax = 7367;
-                this.player.ay = 531;
-            }  
+            if(navigator.platform == 'Win32' || navigator.platform == 'MacIntel'){
+                if(this.player.body.x >= 7367){
+                    this.player.ax = 7367;
+                    this.player.ay = 531;
+                }  
+            }
         }
     },
     render: function() {
@@ -207,10 +227,10 @@ Hallucination.GameState = {
         // }
     },
     addTouchControls: function() {
-        this.leftArrow = this.add.button(50, 580, 'leftButton');
-        this.rightArrow = this.add.button(150, 580, 'rightButton');
-        this.upArrow = this.add.button(1250, 495, 'upButton');
-        this.downArrow = this.add.button(1250, 580, 'downButton');
+        this.leftArrow = this.add.button(50, 530, 'leftButton');
+        this.rightArrow = this.add.button(250, 530, 'rightButton');
+        this.upArrow = this.add.button(1200, 350, 'upButton');
+        this.downArrow = this.add.button(1200, 530, 'downButton');
 
         this.leftArrow.fixedToCamera = true;
         this.rightArrow.fixedToCamera = true;
@@ -277,23 +297,26 @@ Hallucination.GameState = {
     collidePlayerLayer: function(player, layer){
         if(layer.index == 41 || layer.index == 50){ //38 is water, 50 is spike
             player.damage();
+            this.game.camera.x = 0;
+            this.moveCamera = 0;
             this.liveText.text = player.health.toString();
         }       
         if(layer.index == 49){//49 is flag
-            this.gameOverText.text = 'You Win';
-            this.gameOverText.visible = true;
+            this.gameEnd = this.game.add.image(531, 226.5 , 'win');
+            this.gameEnd.fixedToCamera = true;
         } 
-
     },
     collidePlayerEnemi: function(player, enemi){
-        if(player.body.touching.down/* && enemi.body.touching.up*/){
+        if(player.body.touching.down){
             enemi.frame = 2;
             enemi.animations.stop();
             enemi.body.velocity.x = 0;
             enemi.health = 0;
         }else{
             if(enemi.health > 0){
-                player.damage(1);
+                this.game.camera.x = 0;
+                this.moveCamera = 0;
+                player.damage();
                 this.liveText.text = player.health.toString();
             } 
         }   
